@@ -1,2 +1,2 @@
 # ps3-hertz
-A repository with materials for my Fall 2025 sections of PS 3 at UC Berkeley.
+This GitHub repository contains materials used in my Fall 2025 sections of PS 3 at UC Berkeley. Every Thursday, I will upload the week's slides as a .pdf in the Slides folder, where you can download them. A copy of the section syllabus is also contained here for you to review. Students hoping to find extra practice exercises can find them in the Extra Practice folder.
