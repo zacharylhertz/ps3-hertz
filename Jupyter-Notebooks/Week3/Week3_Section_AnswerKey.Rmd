@@ -1,0 +1,213 @@
+---
+title: "POLSCI 3 Review Exercise: Variable Types and Function Anatomy - ANSWER KEY"
+output: html_document
+---
+
+In this review exercise, we'll first cover two important foundational concepts, then practice the skills you've learned so far using an expanded version of the police traffic stop dataset.
+
+Let's start by loading in the dataset!
+
+```{r setup}
+# RUN THIS CELL
+officerdata <- read.csv('ps3_fl_officers_expanded.csv')
+head(officerdata)
+```
+
+This dataset contains the same police traffic stop data from Week 2, but with several new variables:
+
+- `search_occur`: Whether a search was conducted (0 = no search, 1 = search)
+- `driver_age`: Categorical age groups ("under 35", "between 35 and 60", "above 60")
+- `driver_race`: Simplified race categories ("White", "POC", "NA")
+- `officer_female`: Officer gender (0 = male, 1 = female)
+- `officer_id`: Unique identifier for each officer
+- **NEW:** `arrest`: Whether an arrest was made (0 = no arrest, 1 = arrest)
+- **NEW:** `driver_age_full`: Driver's age as a number (e.g., 23, 45, 67)
+- **NEW:** `driver_race_full`: Detailed race categories ("white", "black", "hispanic", "asian/pacific islander", "other", "unknown")
+- **NEW:** `officer_sex`: Officer gender as text ("male", "female")
+- **NEW:** `officer_race`: Officer's race using the same categories as `driver_race_full`
+
+## Part 1: Understanding Variable Types and Classes
+
+Before we dive into analysis, it's crucial to understand what *type* of data we're working with. In R, variables have different **classes** that determine how R treats them.
+
+### The Two Main Classes We'll Focus On
+
+**Character variables** contain text. Examples:
+- Names like "John Smith"
+- Categories like "male" and "female"
+- Race categories like "white", "black", "hispanic"
+
+**Integer variables** contain whole numbers. Examples:
+- Age like 25, 43, 67
+- Counts like 0, 1, 2, 3
+- Binary indicators like 0 and 1
+
+Let's check the class of some variables in our dataset:
+
+```{r class-examples}
+# Check the class of driver_age_full
+class(officerdata$driver_age_full)
+
+# Check the class of officer_sex
+class(officerdata$officer_sex)
+
+# Check the class of driver_race_full
+class(officerdata$driver_race_full)
+```
+
+**Question 1.** What class is the `arrest` variable? Use the `class()` function to find out and save your answer in the variable `arrest_class`.
+
+```{r q1}
+arrest_class <- class(officerdata$arrest)
+arrest_class
+```
+
+**Question 2.** Look at the output from `class(officerdata$officer_sex)` above. Even though `officer_female` and `officer_sex` contain the same information (just coded differently), what are their different classes?
+
+```{r q2}
+# Check the class of officer_female
+class_officer_female <- class(officerdata$officer_female)
+
+# Check the class of officer_sex  
+class_officer_sex <- class(officerdata$officer_sex)
+
+# Print both
+class_officer_female
+class_officer_sex
+```
+
+### Why Does This Matter?
+
+The class of a variable determines what operations you can perform on it:
+
+- You can take the `mean()` of integer variables, but not character variables
+- You use different approaches when subsetting based on character vs. integer variables
+- Some functions expect specific classes of input
+
+For example, this works:
+
+```{r mean-example}
+mean(officerdata$driver_age_full, na.rm = TRUE)
+```
+
+But this doesn't work:
+
+```{r mean-error, eval=FALSE}
+# This will give an error!
+# mean(officerdata$officer_sex)  # Error!
+```
+
+## Part 2: Function Anatomy - Understanding `subset()`
+
+The `subset()` function is one of the most important tools for data analysis. Let's break down exactly how it works.
+
+### General Structure
+```r
+subset(dataset, condition)
+```
+
+### The Parts
+1. **Function name**: `subset`
+2. **First argument**: The dataset you want to filter
+3. **Second argument**: A logical condition that evaluates to TRUE or FALSE for each row
+
+### The Logic Behind `subset(dataset, variable == value)`
+
+When you write something like:
+```r
+subset(officerdata, officer_sex == "female")
+```
+
+Here's what happens step by step:
+
+1. R looks at every row in `officerdata`
+2. For each row, R checks: "Is the value in `officer_sex` equal to 'female'?"
+3. This creates a TRUE/FALSE answer for every row
+4. `subset()` keeps only the rows where the answer is TRUE
+
+### Important Notes About the `==` Operator
+
+- `==` asks "is this equal to that?"
+- `=` is used for assignment (like `x = 5`)
+- **Always use `==` when checking equality in conditions**
+
+For character variables, you need quotes:
+```r
+subset(officerdata, officer_sex == "female")  # Correct
+subset(officerdata, officer_sex == female)    # Error!
+```
+
+For integer variables, no quotes:
+```r
+subset(officerdata, officer_female == 1)      # Correct
+subset(officerdata, officer_female == "1")    # This works but is not ideal
+```
+
+**Question 3.** Using the `subset()` function, create a subset of `officerdata` containing only cases where the driver's race (`driver_race_full`) is "black". Save this in `black_drivers`.
+
+```{r q3}
+black_drivers <- subset(officerdata, driver_race_full == "black")
+head(black_drivers)
+```
+
+**Question 4.** Create a subset containing only cases where the driver's age (`driver_age_full`) is exactly 25. Save this in `age_25_drivers`.
+
+```{r q4}
+age_25_drivers <- subset(officerdata, driver_age_full == 25)
+head(age_25_drivers)
+```
+
+**Question 5.** What's wrong with this code? Fix it and save the corrected subset in `female_officers_fixed`.
+
+```r
+# This code has an error:
+# female_officers_broken <- subset(officerdata, officer_sex = "female")
+```
+
+```{r q5}
+# The error is using = instead of == for equality comparison
+female_officers_fixed <- subset(officerdata, officer_sex == "female")
+head(female_officers_fixed)
+```
+
+## Part 3: Review of Core Skills
+
+Now let's practice the analysis skills you've learned, using the expanded dataset.
+
+**Question 6.** Among all traffic stops involving Hispanic drivers, what proportion resulted in an arrest? Save your answer in `hispanic_arrest_rate`.
+
+```{r q6}
+hispanic_subset <- subset(officerdata, driver_race_full == "hispanic")
+hispanic_arrest_rate <- mean(hispanic_subset$arrest, na.rm = TRUE)
+hispanic_arrest_rate * 100  # Display as percentage
+```
+
+**Question 7.** Create a one-way table showing how many stops were conducted by officers of each race. Save this table in `officer_race_table`.
+
+```{r q7}
+officer_race_table <- table(officerdata$officer_race)
+officer_race_table
+```
+
+**Question 8.** Create a two-way table showing the relationship between driver race (`driver_race_full`) and whether an arrest occurred (`arrest`). Put driver race along the rows and arrest along the columns. Save this in `race_arrest_table`.
+
+```{r q8}
+race_arrest_table <- table(officerdata$driver_race_full, officerdata$arrest)
+race_arrest_table
+```
+
+**Question 9.** Among stops involving white officers and black drivers, what proportion resulted in a search? You'll need to create a subset with two conditions, then calculate the mean of `search_occur`.
+
+**Hint:** To subset with multiple conditions, use the `&` operator:
+```r
+subset(dataset, condition1 & condition2)
+```
+
+```{r q9}
+white_officer_black_driver <- subset(officerdata, officer_race == "white" & driver_race_full == "black")
+white_officer_black_driver_search_rate <- mean(white_officer_black_driver$search_occur, na.rm = TRUE)
+white_officer_black_driver_search_rate * 100  # Display as percentage
+```
+
+### Discussion Questions
+
